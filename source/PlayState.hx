@@ -1,13 +1,3 @@
-
-// deez nuts
-// deez nuts
-// deez nuts
-// deez nuts
-// deez nuts
-// deez nuts
-
-// true
-
 package;
 
 #if desktop
@@ -973,39 +963,22 @@ class PlayState extends MusicBeatState
 				add(bg);
 				
 			case 'animatedbg':
-
-				/*var videos = [];
-				trace("caching images...");
-	
-				for (i in FileSystem.readDirectory(FileSystem.absolutePath("assets/videos/")))
-				{
-					if (!i.endsWith(".mp4"))
-						continue;
-					videos.push(i);
-				}
-				for (i in videos)
-				{
-					var replaced = i.replace(".mp4","");
-					FlxG.bitmap.add(Paths.video("assets/videos/" + replaced,"shared"));
-					trace("this is " + replaced);
-				}*/
-
-				animatedbg = new BGSprite('animatedbg', 620, 330, 0, 0);
-				animatedbg.scale.set(2.7, 2.7);
-				//animatedbg.screenCenter();
-				animatedbg.y -= 350;
-				animatedbg.x -= 600;
-
 				if (animatedbgdisable == true || ClientPrefs.lowQuality || !ClientPrefs.animatedbg) {
 					animatedbg = new BGSprite('animatedbg', -500, -500, 0, 0);
 					animatedbg.scale.set(1.5, 1.5);
 					animatedbg.screenCenter();
+					add(animatedbg);
 				} else {
-					var video:MP4Handler2 = new MP4Handler2();
-					video.playMP42(Paths.video('animatedbg'), null, animatedbg);
+				    var BG:VideoSprite = new VideoSprite(620, 330);
+						BG.load(Paths.video('animatedbg'));
+						BG.play();
+						BG.scrollFactor.set();
+						BG.scale.set(2.7, 2.7);
+						BG.y -= 350;
+				        BG.x -= 600;
+						BG.updateHitbox();
+						add(BG);
 				}
-				
-				add(animatedbg);
 
 				if(!ClientPrefs.lowQuality) {
 					backdudes = new FlxSprite(-400, 100);
@@ -1019,38 +992,22 @@ class PlayState extends MusicBeatState
 
 			case 'fallenbg': //FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN FALLEN 
 
-				/*var videos = [];
-				trace("caching images...");
-
-				for (i in FileSystem.readDirectory(FileSystem.absolutePath("assets/videos/")))
-				{
-					if (!i.endsWith(".mp4"))
-						continue;
-					videos.push(i);
-				}
-				for (i in videos)
-				{
-					var replaced = i.replace(".mp4","");
-					FlxG.bitmap.add(Paths.video("assets/videos/" + replaced,"shared"));
-					trace("this is " + replaced);
-				}*/
-
-				fallenbg = new BGSprite('fallingbg', 620, 330, 0, 0);
-				fallenbg.scale.set(2.7, 2.7);
-				//fallenbg.screenCenter();
-				fallenbg.y -= 350;
-				fallenbg.x -= 600;
-
 				if (animatedbgdisable == true || ClientPrefs.lowQuality || !ClientPrefs.animatedbg) {
 					fallenbg = new BGSprite('fallenbg', -500, -500, 0, 0);
 					fallenbg.scale.set(1.5, 1.5);
 					fallenbg.screenCenter();
+					add(fallenbg);
 				} else {
-					var video:MP4Handler2 = new MP4Handler2();
-					video.playMP42(Paths.video('fallingbg'), null, fallenbg);
+				    var BG:VideoSprite = new VideoSprite(620, 330);
+						BG.load(Paths.video('fallingbg'));
+						BG.play();
+						BG.scrollFactor.set();
+						BG.scale.set(2.7, 2.7);
+						BG.y -= 350;
+				        BG.x -= 600;
+						BG.updateHitbox();
+						add(BG);
 				}
-				
-				add(fallenbg);
 			case 'obsidian':
 				var bg:BGSprite = new BGSprite('ignition/Background', -450, 0, 1, 1);
 				var bg:BGSprite = new BGSprite('ignition/Background', -450, -450, 1, 1);
@@ -1866,53 +1823,46 @@ class PlayState extends MusicBeatState
 		char.y += char.positionArray[1];
 	}
 
-	public function startVideo(name:String):Void {
+    public function startVideo(name:String)
+	{
 		#if VIDEOS_ALLOWED
-		var foundFile:Bool = false;
-		var fileName:String = #if MODS_ALLOWED Paths.modFolders('videos/' + name + '.' + Paths.VIDEO_EXT); #else ''; #end
+		inCutscene = true;
+
+		var filepath:String = Paths.video(name);
 		#if sys
-		if(FileSystem.exists(fileName)) {
-			foundFile = true;
-		}
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
 		#end
-
-		if(!foundFile) {
-			fileName = Paths.video(name);
-			#if sys
-			if(FileSystem.exists(fileName)) {
-			#else
-			if(OpenFlAssets.exists(fileName)) {
-			#end
-				foundFile = true;
-			}
-		}
-
-		if(foundFile) {
-			inCutscene = true;
-			var bg = new FlxSprite(-FlxG.width, -FlxG.height).makeGraphic(FlxG.width * 3, FlxG.height * 3, FlxColor.BLACK);
-			bg.scrollFactor.set();
-			bg.cameras = [camHUD];
-			add(bg);
-
-			(new FlxVideo(fileName)).finishCallback = function() {
-				remove(bg);
-				if(endingSong) {
-					endSong();
-				} else {
-					startCountdown();
-					creditthing();
-				}
-			}
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
+			startAndEnd();
 			return;
-		} else {
-			FlxG.log.warn('Couldnt find video file: ' + fileName);
 		}
+
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			startAndEnd();
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+		startAndEnd();
+		return;
 		#end
-		if(endingSong) {
+	}
+
+	function startAndEnd()
+	{
+		if(endingSong)
 			endSong();
-		} else {
+		else
 			startCountdown();
-		}
 	}
 
 	var dialogueCount:Int = 0;
@@ -1951,17 +1901,39 @@ class PlayState extends MusicBeatState
 			startCountdown();
 		}
 		
-   function startMP4vid(name:String)
-   {
-	   
-	   var video:MP4Handler = new MP4Handler();
-	   video.playMP4(Paths.video(name));
-	   video.finishCallback = function()
-	   {
-		   LoadingState.loadAndSwitchState(new PlayState());
-	   }
-	   isCutscene = true;
-   }
+    public function startMP4vid(name:String)
+	{
+		#if VIDEOS_ALLOWED
+		inCutscene = true;
+
+		var filepath:String = Paths.video(name);
+		#if sys
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
+		#end
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
+			LoadingState.loadAndSwitchState(new PlayState());
+			return;
+		}
+
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			LoadingState.loadAndSwitchState(new PlayState());
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+		LoadingState.loadAndSwitchState(new PlayState());
+		return;
+		#end
+	}
 
 	var startTimer:FlxTimer;
 	var finishTimer:FlxTimer = null;
@@ -3988,19 +3960,54 @@ class PlayState extends MusicBeatState
 						MusicBeatState.switchState(new CodeStateNew());
 					} else {
 						FlxG.sound.playMusic(Paths.music('nothin'), 0);
-						var video:MP4Handler = new MP4Handler();
-						video.playMP4(Paths.video('cutscene_end'));
-						video.finishCallback = function()
-						{
-							FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+					    #if VIDEOS_ALLOWED
+		inCutscene = true;
+
+		var filepath:String = Paths.video('cutscene_end');
+		#if sys
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
+		#end
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
+		    FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 
 							if(FlxTransitionableState.skipNextTransIn) {
 								CustomFadeTransition.nextCamera = null;
 							}
 
 							MusicBeatState.switchState(new HintState());
-						}
-						isCutscene = true;
+			return;
+		}
+
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+		    FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+
+							if(FlxTransitionableState.skipNextTransIn) {
+								CustomFadeTransition.nextCamera = null;
+							}
+
+							MusicBeatState.switchState(new HintState());
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+	    FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+
+							if(FlxTransitionableState.skipNextTransIn) {
+								CustomFadeTransition.nextCamera = null;
+							}
+
+							MusicBeatState.switchState(new HintState());
+		return;
+		#end
 						StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
 
 						if (SONG.validScore)
