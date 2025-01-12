@@ -969,7 +969,7 @@ class PlayState extends MusicBeatState
 					animatedbg.screenCenter();
 					add(animatedbg);
 				} else {
-				    var BG:VideoSprite = new VideoSprite(620, 330);
+				    var BG:FlxVideoSprite = new FlxVideoSprite(620, 330);
 						BG.load(Paths.video('animatedbg'));
 						BG.play();
 						BG.scrollFactor.set();
@@ -998,7 +998,7 @@ class PlayState extends MusicBeatState
 					fallenbg.screenCenter();
 					add(fallenbg);
 				} else {
-				    var BG:VideoSprite = new VideoSprite(620, 330);
+				    var BG:FlxVideoSprite = new FlxVideoSprite(620, 330);
 						BG.load(Paths.video('fallingbg'));
 						BG.play();
 						BG.scrollFactor.set();
@@ -3963,14 +3963,14 @@ class PlayState extends MusicBeatState
 					    #if VIDEOS_ALLOWED
 		inCutscene = true;
 
-		var filepath:String = Paths.video('cutscene_end');
+		var filepath:String = Paths.video('');
 		#if sys
 		if(!FileSystem.exists(filepath))
 		#else
 		if(!OpenFlAssets.exists(filepath))
 		#end
 		{
-			FlxG.log.warn('Couldnt find video file: ' + name);
+			FlxG.log.warn('Couldnt find video file: ' + 'cutscene_end');
 		    FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 
 							if(FlxTransitionableState.skipNextTransIn) {
