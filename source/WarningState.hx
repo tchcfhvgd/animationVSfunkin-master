@@ -16,7 +16,6 @@ class WarningState extends MusicBeatState
 {
 	public static var leftState:Bool = false;
 
-	var video:MP4Handler = new MP4Handler();
 	var warnText:FlxText;
 	var isCutscene:Bool = false;
 	var thesongnamename = '';
@@ -129,14 +128,44 @@ class WarningState extends MusicBeatState
    function startMP4vid(name:String)
    {
 	   
-	   var video:MP4Handler = new MP4Handler();
-	   video.playMP4(Paths.video(name));
-	   video.finishCallback = function()
-	   {
+	    #if VIDEOS_ALLOWED
+		inCutscene = true;
+		if (FlxG.sound.music != null)
+			{
+				FlxG.sound.music.stop();
+			}
+
+		var filepath:String = Paths.video(name);
+		#if sys
+		if(!FileSystem.exists(filepath))
+		#else
+		if(!OpenFlAssets.exists(filepath))
+		#end
+		{
+			FlxG.log.warn('Couldnt find video file: ' + name);
 			PlayState.storyDifficulty = 2;
 			PlayState.secret = true;
 		   	LoadingState.loadAndSwitchState(new PlayState());
-	   }
-	   isCutscene = true;
-   }
+			return;
+		}
+
+		var video:FlxVideo = new FlxVideo();
+		video.load(filepath);
+		video.play();
+		video.onEndReached.add(function()
+		{
+			video.dispose();
+			PlayState.storyDifficulty = 2;
+			PlayState.secret = true;
+		   	LoadingState.loadAndSwitchState(new PlayState());
+			return;
+		}, true);
+
+		#else
+		FlxG.log.warn('Platform not supported!');
+		PlayState.storyDifficulty = 2;
+		PlayState.secret = true;
+		LoadingState.loadAndSwitchState(new PlayState());
+		return;
+		#end
 }
