@@ -11,6 +11,11 @@ import lime.app.Application;
 import flixel.addons.transition.FlxTransitionableState;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxTimer;
+import openfl.utils.Assets as OpenFlAssets;
+
+#if sys
+import sys.FileSystem;
+#end
 
 class WarningState extends MusicBeatState
 {
@@ -129,7 +134,7 @@ class WarningState extends MusicBeatState
    {
 	   
 	    #if VIDEOS_ALLOWED
-		inCutscene = true;
+		isCutscene = true;
 		if (FlxG.sound.music != null)
 			{
 				FlxG.sound.music.stop();
