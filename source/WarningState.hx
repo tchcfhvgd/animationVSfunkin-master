@@ -169,3 +169,4 @@ class WarningState extends MusicBeatState
 		return;
 		#end
 }
+}
